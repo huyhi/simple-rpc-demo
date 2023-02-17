@@ -8,4 +8,6 @@ public interface ServiceProvider {
 
     void addService(RpcServiceConfig serviceConfig);
 
+    void publishService(RpcServiceConfig rpcServiceConfig);
+
 }

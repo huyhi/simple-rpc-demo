@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import rpc.core.entity.BaseRequest;
 import rpc.core.exception.RpcException;
 import rpc.core.provider.ServiceProvider;
+import rpc.core.provider.SimpleServiceProvider;
+import rpc.core.utils.SingletonFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -17,7 +19,7 @@ public class RpcRequestHandler {
     private ServiceProvider serviceProvider;
 
     public RpcRequestHandler() {
-        this.serviceProvider = serviceProvider;
+        this.serviceProvider = SingletonFactory.getInstance(SimpleServiceProvider.class);
     }
 
     /*

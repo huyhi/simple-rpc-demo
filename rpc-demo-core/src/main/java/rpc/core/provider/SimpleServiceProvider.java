@@ -39,4 +39,10 @@ public class SimpleServiceProvider implements ServiceProvider {
         }
         serviceMap.put(serviceName, serviceConfig.getService());
     }
+
+    @Override
+    public void publishService(RpcServiceConfig rpcServiceConfig) {
+        // TODO publish server to service register center, such as ZK
+        addService(rpcServiceConfig);
+    }
 }
