@@ -19,10 +19,19 @@ import java.io.Serializable;
  */
 public class BaseResponse<T> implements Serializable {
 
+    private final static int SUCCESS_CODE = 0;
+
     private int code;
 
     private T data;
 
     private String errMsg;
 
+    public static <T> BaseResponse<T> success(T data) {
+        BaseResponse<T> resp = new BaseResponse<>();
+        resp.setCode(SUCCESS_CODE);
+        resp.setData(data);
+
+        return resp;
+    }
 }
