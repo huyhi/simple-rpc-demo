@@ -4,13 +4,20 @@ import lombok.extern.slf4j.Slf4j;
 import rpc.core.entity.RpcServiceConfig;
 import rpc.core.enums.RpcErrMsgEnum;
 import rpc.core.exception.RpcException;
+import rpc.core.registry.ServiceRegistry;
+import rpc.core.registry.ZKServiceRegistry;
+import rpc.core.server.socket.SimpleSocketServer;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class SimpleServiceProvider implements ServiceProvider {
 
+    private ServiceRegistry serviceRegistry;
     /**
      * key: service name
      * value: service object
@@ -19,6 +26,7 @@ public class SimpleServiceProvider implements ServiceProvider {
 
     public SimpleServiceProvider() {
         this.serviceMap = new ConcurrentHashMap<>();
+        this.serviceRegistry = new ZKServiceRegistry();
     }
 
     @Override
@@ -42,7 +50,13 @@ public class SimpleServiceProvider implements ServiceProvider {
 
     @Override
     public void publishService(RpcServiceConfig rpcServiceConfig) {
-        // TODO publish server to service register center, such as ZK
+        // set service to zk
+        try {
+            String host = InetAddress.getLocalHost().getHostAddress();
+            serviceRegistry.registerService(rpcServiceConfig.getServiceName(), new InetSocketAddress(host, SimpleSocketServer.PORT));
+        } catch (Exception e) {
+            throw new RpcException("publish service error.", e);
+        }
         addService(rpcServiceConfig);
     }
 }
