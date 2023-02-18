@@ -1,32 +1,35 @@
 package rpc.core.client.socket;
 
 import rpc.core.client.ClientInterface;
+import rpc.core.discovery.ServiceDiscovery;
+import rpc.core.discovery.ZkServiceDiscovery;
 import rpc.core.entity.BaseRequest;
 import rpc.core.exception.RpcException;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 /**
  * client base on simple Socket
  */
 public class SimpleSocketClient implements ClientInterface {
 
-    private final static int PORT = 9998;
+    private ServiceDiscovery serviceDiscovery;
+
+    public SimpleSocketClient() {
+        this.serviceDiscovery = new ZkServiceDiscovery();
+    }
 
     @Override
     public Object sendRpcRequest(BaseRequest rpcRequest) {
-        // TODO using ZooKeeper to discover service ip and port
-        InetSocketAddress address = null;
+        InetSocketAddress address;
         try {
-            address = new InetSocketAddress(InetAddress.getLocalHost().getHostAddress(), PORT);
-        } catch (UnknownHostException e) {
-            throw new RpcException("get host address error");
+            address = serviceDiscovery.lookup(rpcRequest);
+        } catch (Exception e) {
+            throw new RpcException("discover host address error", e);
         }
 
         try (Socket socket = new Socket()) {

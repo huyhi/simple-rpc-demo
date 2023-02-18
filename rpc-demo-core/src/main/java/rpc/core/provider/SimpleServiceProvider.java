@@ -10,7 +10,6 @@ import rpc.core.server.socket.SimpleSocketServer;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

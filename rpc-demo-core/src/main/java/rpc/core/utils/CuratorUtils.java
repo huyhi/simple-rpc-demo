@@ -1,13 +1,17 @@
 package rpc.core.utils;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
+import rpc.core.enums.RpcErrMsgEnum;
 import rpc.core.exception.RpcException;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 public class CuratorUtils {
 
     private static final Set<String> registeredPathSet = ConcurrentHashMap.newKeySet();
+    private static final Map<String, List<String>> serviceAddressMap = new ConcurrentHashMap<>();
     // single zk client everywhere
     private static CuratorFramework zkClient;
     // TODO all config properties should be Configurable
@@ -28,7 +33,7 @@ public class CuratorUtils {
      * connect to zk server, return the client
      */
     public static CuratorFramework getZkClient() {
-        // check zk client allready start
+        // check zk client already start
         if (zkClient != null && zkClient.getState() == CuratorFrameworkState.STARTED) {
             return zkClient;
         }
@@ -67,5 +72,22 @@ public class CuratorUtils {
         }
         // add to local set cache to enhance performance
         registeredPathSet.add(path);
+    }
+
+    public static List<String> getChildrenNode(CuratorFramework zkClient, String serviceName) throws Exception {
+        // same, check local cache first
+        List<String> serviceList = serviceAddressMap.get(serviceName);
+        if (serviceList != null) {
+            return serviceList;
+        }
+        // cache not found, look up in zookeeper
+        String prefix = String.format("%s/%s", ZK_REGISTER_ROOT_PATH, serviceName);
+        serviceList = zkClient.getChildren().forPath(prefix);
+        if (CollectionUtils.isEmpty(serviceList)) {
+            throw new RpcException(RpcErrMsgEnum.EMPTY_SERVICE_FROM_ZK, serviceName);
+        }
+        serviceAddressMap.put(serviceName, serviceList);
+        // TODO add watcher to watch this serviceName nodes changed.
+        return serviceList;
     }
 }
