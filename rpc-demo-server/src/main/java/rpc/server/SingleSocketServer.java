@@ -3,7 +3,7 @@ package rpc.server;
 import rpc.core.entity.RpcServiceConfig;
 import rpc.core.server.ServerInterface;
 import rpc.core.server.socket.SimpleSocketServer;
-import rpc.server.services.HelloServiceImpl;
+import rpc.server.services.UserServiceImpl;
 
 public class SingleSocketServer {
 
@@ -12,7 +12,7 @@ public class SingleSocketServer {
         // TODO auto register services
         ServerInterface server = new SimpleSocketServer();
         server.registerService(RpcServiceConfig.builder()
-                .service(new HelloServiceImpl())
+                .service(new UserServiceImpl())
                 .build());
 
         server.start();

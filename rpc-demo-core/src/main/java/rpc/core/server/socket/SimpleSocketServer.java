@@ -68,6 +68,8 @@ public class SimpleSocketServer implements ServerInterface {
             objectOutputStream.flush();
         } catch (IOException | ClassNotFoundException e) {
             log.error("occur exception:", e);
+        } catch (Exception e) {
+            log.error("handle socket resp meet unexpected exception. ", e);
         }
     }
 }

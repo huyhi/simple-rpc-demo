@@ -1,27 +1,26 @@
 package rpc.client;
 
 import lombok.extern.slf4j.Slf4j;
-import rpc.api.HelloService;
-import rpc.core.client.ClientInterface;
+import rpc.api.UserService;
 import rpc.core.client.socket.SimpleSocketClient;
-import rpc.core.entity.BaseRequest;
+import rpc.core.proxy.ClientProxy;
+import rpc.dto.User;
+
+import java.util.Random;
 
 @Slf4j
 public class SingleSocketClient {
 
     public static void main(String[] args) {
+        /*
+         * how could client call a remote procedure just like call a local simple function
+         * use a jdk proxy to achieve that, actually the service variable is a proxy object
+         */
+        UserService service = new ClientProxy(new SimpleSocketClient()).getProxy(UserService.class);
 
-        ClientInterface client = new SimpleSocketClient();
-
-        // TODO use JDK dynamic proxy to enhance api call
-        BaseRequest request = BaseRequest.builder()
-                .interfaceName(HelloService.class.getName())
-                .methodName("sayHello")
-                .parameters(new Object[]{"hello world"})
-                .parameterTypes(new Class<?>[]{String.class})
-                .build();
-
-        Object resp = client.sendRpcRequest(request);
-        log.info("response: {}", resp);
+        for (int i = 0; i < 10; i++) {
+            User userData = service.queryById(new Random().nextLong());
+            log.info("response: {}", userData);
+        }
     }
 }
