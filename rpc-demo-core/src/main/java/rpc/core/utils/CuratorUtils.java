@@ -5,11 +5,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
+import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import rpc.core.enums.RpcErrMsgEnum;
 import rpc.core.exception.RpcException;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,7 +89,36 @@ public class CuratorUtils {
             throw new RpcException(RpcErrMsgEnum.EMPTY_SERVICE_FROM_ZK, serviceName);
         }
         serviceAddressMap.put(serviceName, serviceList);
-        // TODO add watcher to watch this serviceName nodes changed.
+        watchService(zkClient, serviceName);
         return serviceList;
+    }
+
+    private static void watchService(CuratorFramework zkClient, String serviceName) throws Exception {
+        String servicePath = String.format("%s/%s", ZK_REGISTER_ROOT_PATH, serviceName);
+
+        PathChildrenCache pathChildrenCache = new PathChildrenCache(zkClient, servicePath, true);
+        pathChildrenCache.getListenable().addListener((curatorFramework, pathChildrenCacheEvent) -> {
+            List<String> serviceAddresses = curatorFramework.getChildren().forPath(servicePath);
+            serviceAddressMap.put(serviceName, serviceAddresses);
+        });
+        pathChildrenCache.start();
+    }
+
+    public static void clearRegistry(CuratorFramework zkClient, InetSocketAddress address) {
+        // only clean zk, which cleaned node end with ip
+        // parallel method with create streams that execute in multiple threads, make use of multiple processor cores
+        registeredPathSet.stream().parallel().forEach(p -> {
+            try {
+                if (p.endsWith(address.toString())) {
+                    zkClient.delete().forPath(p);
+                }
+            } catch (Exception e) {
+                log.error("clear registry for path [{}] fail", p);
+            }
+        });
+        /*
+         * because we have already set a zk path watch on the serviceName
+         * do not need to care about clean up serviceAddressMap
+         */
     }
 }

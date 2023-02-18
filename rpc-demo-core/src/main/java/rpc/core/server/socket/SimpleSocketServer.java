@@ -5,6 +5,7 @@ import rpc.core.entity.BaseRequest;
 import rpc.core.entity.BaseResponse;
 import rpc.core.entity.RpcServiceConfig;
 import rpc.core.handler.RpcRequestHandler;
+import rpc.core.hooks.CleanShutdownHook;
 import rpc.core.provider.ServiceProvider;
 import rpc.core.provider.SimpleServiceProvider;
 import rpc.core.server.ServerInterface;
@@ -44,6 +45,8 @@ public class SimpleSocketServer implements ServerInterface {
             String host = InetAddress.getLocalHost().getHostAddress();
             server.bind(new InetSocketAddress(host, PORT));
             log.info("socket server start as {}:{}", host, PORT);
+            // register shutdown hook
+            CleanShutdownHook.getCleanShutdownHook().clearAll();
 
             Socket socket;
             while ((socket = server.accept()) != null) {
