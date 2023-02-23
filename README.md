@@ -12,13 +12,13 @@ Just a simple toy project, aim to learn the principle of rpc and something about
 
 ✔️ Use shutdown hook to clean resource when server shutdown
 
+✔️ Config configurable
+
 ---
 
 Future TODO: 
 
 [ ] Implement netty transport protocol
-
-[ ] Config configurable
 
 [ ] Better load balance algorithm
 

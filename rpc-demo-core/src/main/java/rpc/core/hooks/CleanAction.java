@@ -1,7 +1,8 @@
 package rpc.core.hooks;
 
 import lombok.extern.slf4j.Slf4j;
-import rpc.core.server.socket.SimpleSocketServer;
+import rpc.core.enums.CfgNameEnum;
+import rpc.core.utils.CfgUtils;
 import rpc.core.utils.CuratorUtils;
 
 import java.net.InetAddress;
@@ -15,7 +16,10 @@ public class CleanAction implements Runnable {
         log.info("shutdown hook has run.");
         // clean registered zk info
         try {
-            InetSocketAddress inetSocketAddress = new InetSocketAddress(InetAddress.getLocalHost().getHostAddress(), SimpleSocketServer.PORT);
+            String host = InetAddress.getLocalHost().getHostAddress();
+            int port = CfgUtils.getCfgAsInt(CfgNameEnum.SERVICE_PORT);
+
+            InetSocketAddress inetSocketAddress = new InetSocketAddress(host, port);
             CuratorUtils.clearRegistry(CuratorUtils.getZkClient(), inetSocketAddress);
         } catch (Exception e) {
             log.error("shutdown hook runner error. clean zk info failed. ", e);

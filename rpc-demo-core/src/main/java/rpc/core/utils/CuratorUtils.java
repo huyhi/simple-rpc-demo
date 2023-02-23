@@ -8,6 +8,7 @@ import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
+import rpc.core.enums.CfgNameEnum;
 import rpc.core.enums.RpcErrMsgEnum;
 import rpc.core.exception.RpcException;
 
@@ -25,11 +26,17 @@ public class CuratorUtils {
     private static final Map<String, List<String>> serviceAddressMap = new ConcurrentHashMap<>();
     // single zk client everywhere
     private static CuratorFramework zkClient;
-    // TODO all config properties should be Configurable
-    private static final String ZK_ADDRESS = "127.0.0.1:2181";
+
+    private static final String ZK_ADDRESS;
+    public static final String ZK_REGISTER_ROOT_PATH;
+
     private static final int BASE_SLEEP_TIME = 1000;
     private static final int MAX_RETRIES = 3;
-    public static final String ZK_REGISTER_ROOT_PATH = "/rpc";
+
+    static {
+        ZK_ADDRESS = CfgUtils.getCfgAsStr(CfgNameEnum.ZK_ADDRESS);
+        ZK_REGISTER_ROOT_PATH = CfgUtils.getCfgAsStr(CfgNameEnum.ZK_ROOT_PATH);
+    }
 
     /*
      * connect to zk server, return the client

@@ -4,11 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import rpc.core.entity.BaseRequest;
 import rpc.core.entity.BaseResponse;
 import rpc.core.entity.RpcServiceConfig;
+import rpc.core.enums.CfgNameEnum;
+import rpc.core.exception.RpcException;
 import rpc.core.handler.RpcRequestHandler;
 import rpc.core.hooks.CleanShutdownHook;
 import rpc.core.provider.ServiceProvider;
 import rpc.core.provider.SimpleServiceProvider;
 import rpc.core.server.ServerInterface;
+import rpc.core.utils.CfgUtils;
 import rpc.core.utils.SingletonFactory;
 
 import java.io.IOException;
@@ -22,14 +25,15 @@ import java.net.Socket;
 @Slf4j
 public class SimpleSocketServer implements ServerInterface {
 
-    public static final int PORT = 9998;
-
     private final RpcRequestHandler rpcRequestHandler;
     private final ServiceProvider serviceProvider;
 
     public SimpleSocketServer() {
         this.rpcRequestHandler = new RpcRequestHandler();
         serviceProvider = SingletonFactory.getInstance(SimpleServiceProvider.class);
+
+        // do something for preparation before start
+        beforeStart();
     }
 
     @Override
@@ -37,16 +41,23 @@ public class SimpleSocketServer implements ServerInterface {
         serviceProvider.publishService(config);
     }
 
+
+    private void beforeStart() {
+        // load all config properties first
+        CfgUtils.loadConfigProperties();
+        // register shutdown hook
+        CleanShutdownHook.getCleanShutdownHook().clearAll();
+    }
+
+
     @Override
     public void start() {
-
         try (ServerSocket server = new ServerSocket()) {
-
             String host = InetAddress.getLocalHost().getHostAddress();
-            server.bind(new InetSocketAddress(host, PORT));
-            log.info("socket server start as {}:{}", host, PORT);
-            // register shutdown hook
-            CleanShutdownHook.getCleanShutdownHook().clearAll();
+            int port = CfgUtils.getCfgAsInt(CfgNameEnum.SERVICE_PORT);
+
+            server.bind(new InetSocketAddress(host, port));
+            log.info("socket server start as {}:{}", host, port);
 
             Socket socket;
             while ((socket = server.accept()) != null) {
