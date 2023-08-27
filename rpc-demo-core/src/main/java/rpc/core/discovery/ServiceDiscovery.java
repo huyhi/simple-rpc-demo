@@ -6,8 +6,6 @@ import java.net.InetSocketAddress;
 
 public interface ServiceDiscovery {
 
-    InetSocketAddress lookup(String serviceName) throws Exception;
-
     InetSocketAddress lookup(BaseRequest request) throws Exception;
 
 }
